@@ -1,0 +1,5 @@
+#git+https://github.com/facebookresearch/segment-anything.git
+git+https://github.com/facebookresearch/segment-anything-2.git
+#numpy==1.26.4
+#opencv-python
+#streamlit
