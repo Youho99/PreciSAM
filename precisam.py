@@ -10,14 +10,17 @@ from copy import deepcopy
 import shutil
 import atexit
 
+
 # Define the cleanup function to be called on program exit
 def cleanup():
     folder_to_remove = "output"
     if os.path.exists(folder_to_remove):
         shutil.rmtree(folder_to_remove)
 
+
 # Register the cleanup function to be called on program exit
 atexit.register(cleanup)
+
 
 # Function to recalculate bboxes and areas
 def sam_bbox(bbox, image, model):
@@ -40,11 +43,14 @@ def sam_bbox(bbox, image, model):
 
     return new_bbox, new_area
 
-def initialize_model():
-    return SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-large")
+
+def initialize_model(selected_model):
+    return SAM2ImagePredictor.from_pretrained(selected_model)
+
 
 def bbox_to_xyxy(bbox):
     return np.array([bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]])
+
 
 def find_first_json(path_dir_annotations):
     # Cherche tous les fichiers JSON dans le dossier annotations
@@ -52,6 +58,7 @@ def find_first_json(path_dir_annotations):
     if not json_files:
         raise FileNotFoundError("No JSON files found in annotations folder.")
     return os.path.join(path_dir_annotations, json_files[0])
+
 
 def adjust_image_path(path_dir_images):
     # List all the contents in the 'images' directory
@@ -63,6 +70,7 @@ def adjust_image_path(path_dir_images):
         path_dir_images = os.path.join(path_dir_images, contents[0])
 
     return path_dir_images
+
 
 def create_zip_with_updated_json(directory_path, zip_name, output_dir):
     if os.path.exists(output_dir):
@@ -80,9 +88,13 @@ def create_zip_with_updated_json(directory_path, zip_name, output_dir):
     
     return zip_path
 
+
 def main():
     st.title("Bounding Box Recalibration Application with SAM")
     st.write("This application recalculates annotation bounding boxes using the SAM model.")
+
+    models = ["facebook/sam2-hiera-large", "facebook/sam2-hiera-small", "facebook/sam2-hiera-tiny", "facebook/sam2-hiera-base-plus"]
+    selected_model = st.selectbox("Select a model", models)
 
     # Initialize session state variables
     if 'uploaded_file' not in st.session_state:
@@ -114,7 +126,7 @@ def main():
             st.session_state.new_zip_path = None
         else:
             with st.spinner("Initializing model..."):
-                model = initialize_model()
+                model = initialize_model(selected_model)
 
             with st.spinner("Processing..."):
                 zip_name = os.path.splitext(st.session_state.uploaded_file.name)[0]
@@ -158,6 +170,7 @@ def main():
             st.session_state.new_zip_path = new_zip_path
             st.success("Processing complete! The output ZIP is ready for download.")
 
+
     # Provide a download link for the new ZIP file
     if st.session_state.download_ready and st.session_state.new_zip_path:
         with open(st.session_state.new_zip_path, "rb") as f:
@@ -167,6 +180,7 @@ def main():
                 file_name=os.path.basename(st.session_state.new_zip_path),
                 mime="application/zip"
             )
+
 
 if __name__ == "__main__":
     main()
