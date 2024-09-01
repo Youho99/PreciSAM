@@ -4,7 +4,11 @@ import zipfile
 import shutil
 import json
 import atexit
+
 from utils.utils import initialize_model, adjust_image_path, find_first_json, create_zip_with_updated_json, process_annotations, cleanup
+
+
+MODELS = ["facebook/sam2-hiera-large", "facebook/sam2-hiera-small", "facebook/sam2-hiera-tiny", "facebook/sam2-hiera-base-plus"]
 
 
 atexit.register(cleanup)
@@ -14,8 +18,8 @@ def main():
     st.title("Bounding Box Recalibration Application with SAM")
     st.write("This application recalculates annotation bounding boxes using the SAM model.")
 
-    models = ["facebook/sam2-hiera-large", "facebook/sam2-hiera-small", "facebook/sam2-hiera-tiny", "facebook/sam2-hiera-base-plus"]
-    selected_model = st.selectbox("Select a model", models)
+    
+    selected_model = st.selectbox("Select a model", MODELS)
 
     if 'uploaded_file' not in st.session_state:
         st.session_state.uploaded_file = None
