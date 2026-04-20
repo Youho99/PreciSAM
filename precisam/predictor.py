@@ -1,3 +1,5 @@
+import contextlib
+
 import torch
 from PIL import Image
 
@@ -14,6 +16,11 @@ class SAM3Predictor:
         self._processor = None
         self._image_state: dict | None = None
         self._image_size: tuple[int, int] | None = None
+        self._infer_ctx = (
+            contextlib.nullcontext()
+            if device == "cpu"
+            else torch.autocast("cuda", dtype=torch.bfloat16)
+        )
 
     def load(self) -> None:
         from sam3.model_builder import build_sam3_image_model
@@ -34,7 +41,8 @@ class SAM3Predictor:
     def set_image(self, image: Image.Image) -> None:
         """Encode image once. Reuse across multiple refine_bbox() calls."""
         state: dict = {}
-        self._processor.set_image(image=image, state=state)
+        with torch.inference_mode(), self._infer_ctx:
+            self._processor.set_image(image=image, state=state)
         self._image_state = state
         self._image_size = image.size
 
@@ -51,8 +59,9 @@ class SAM3Predictor:
 
         # Shallow copy: image features are read-only tensors, prompt keys are new
         state = dict(self._image_state)
-        self._processor.add_geometric_prompt(box=box_norm, label=True, state=state)
-        self._processor._forward_grounding(state=state)
+        with torch.inference_mode(), self._infer_ctx:
+            self._processor.add_geometric_prompt(box=box_norm, label=True, state=state)
+            self._processor._forward_grounding(state=state)
 
         masks = state.get("masks")
         if masks is None or len(masks) == 0:
