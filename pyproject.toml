@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "precisam"
+version = "0.1.0"
+description = "Refine COCO bounding boxes using SAM3"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "Pillow>=10.0",
+    "numpy>=1.24",
+    "tqdm>=4.65",
+    "sam3 @ git+https://github.com/facebookresearch/sam3.git",
+]
+
+[project.scripts]
+precisam = "precisam.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["precisam*"]

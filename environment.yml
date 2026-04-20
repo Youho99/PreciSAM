@@ -1,0 +1,18 @@
+name: precisam
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pytorch>=2.2
+  - torchvision
+  # GPU: uncomment and set your CUDA version
+  # - pytorch-cuda=12.1
+  - pip:
+      - Pillow>=10.0
+      - numpy>=1.24
+      - tqdm>=4.65
+      - sam3 @ git+https://github.com/facebookresearch/sam3.git
